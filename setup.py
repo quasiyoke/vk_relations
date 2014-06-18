@@ -3,7 +3,24 @@
 import ez_setup
 ez_setup.use_setuptools()
 
-SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
+import setuptools
+
+
+class create_tables(setuptools.Command):
+    description = 'create DB tables'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from vk_relations import models
+        models.create_tables()
+        
 
 setuptools.setup(
     name='vk_relations',
@@ -18,5 +35,8 @@ setuptools.setup(
     install_requires=[
         'MySQLdb',
         'peewee',
-    ]
+    ],
+    cmdclass={
+        'create_tables': create_tables,
+    }
 )
