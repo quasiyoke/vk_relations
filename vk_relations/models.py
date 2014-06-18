@@ -1,11 +1,18 @@
+import logging
+import sys
+
 import peewee
 
 import settings
 
 
-database = peewee.MySQLDatabase(settings.DB.NAME, settings.DB.USER, settings.DB.PASSWORD)
+logging.basicConfig()
 
-RELATION_TYPE_CHOICES = (
+
+database = peewee.MySQLDatabase(settings.DB.NAME, user=settings.DB.USER, passwd=settings.DB.PASSWORD)
+    
+
+RELATION_CHOICES = (
     ('single', 'Single'),
     ('in_a_relationship', 'In a relationship'),
     ('engaged', 'Engaged'),
@@ -24,23 +31,20 @@ class Person(peewee.Model):
 
     id = peewee.IntegerField(primary_key=True)
     sex = peewee.CharField(choices=SEX_CHOICES)
-    relation = peewee.ForeignKeyField('self', related_name='relates_with', null=True)
-    relation_type = peewee.CharField(choices=RELATION_TYPE_CHOICES)
+    relation = peewee.CharField(choices=RELATION_CHOICES)
+    relation_partner = peewee.ForeignKeyField('self', related_name='relates_with', null=True)
     check_date = peewee.DateTimeField()
 
     class Meta:
         database = database
-        indexes = (
-            (('sex, relation_type'), False),
-            (('relation_type'), False),
-        )
+        
 
 class RelationChange(peewee.Model):
     person = peewee.ForeignKeyField(Person, related_name='relation_changes')
-    relation_old = peewee.ForeignKeyField(Person, related_name='+', null=True)
-    relation_new = peewee.ForeignKeyField(Person, related_name='+', null=True)
-    relation_type_old = peewee.CharField(choices=RELATION_TYPE_CHOICES)
-    relation_type_new = peewee.CharField(choices=RELATION_TYPE_CHOICES)
+    relation_old = peewee.CharField(choices=RELATION_CHOICES)
+    relation_new = peewee.CharField(choices=RELATION_CHOICES)
+    relation_partner_old = peewee.ForeignKeyField(Person, related_name='relation_partners_old', null=True)
+    relation_partner_new = peewee.ForeignKeyField(Person, related_name='relation_partners_new', null=True)
     check_date_old = peewee.DateTimeField()
     check_date_new = peewee.DateTimeField()
 
@@ -48,5 +52,14 @@ class RelationChange(peewee.Model):
         database = database
         indexes = (
             (('check_date_old', 'check_date_new'), False),
-            (('check_date_new'), False),
         )
+
+
+def create_tables():
+    try:
+        Person.create_table()
+        RelationChange.create_table()
+    except ( IOError):
+        '''peewee.DatabaseError, peewee.OperationalError'''
+        logging.getLogger(__name__).critical('Can\'t connect to database.')
+        sys.exit()
