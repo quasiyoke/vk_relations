@@ -6,7 +6,7 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
 1. Install MySQL locally.
 2. Execute the following commands at MySQL admin console:
 
-        mysql> CREATE USER vk_relations_user@localhost IDENTIFIED BY "topsecret";
+        mysql> CREATE USER vk_relations_user@localhost IDENTIFIED BY "topsecret_mysql_password";
         mysql> CREATE DATABASE vk_relations_db;
         mysql> GRANT ALL ON vk_relations_db.* TO vk_relations_user@localhost;
 3. Install [MySQLdb package.][1]
@@ -20,7 +20,11 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
 				"NAME": "vk_relations_db",
 				"USER": "vk_relations_user",
 				"PASSWORD": "topsecret"
-			}
+			},
+			"VK": {
+				"LOGIN": "user@mail.com",
+				"PASSWORD": "topsecret_vk_password"
+            }
 		}
 6. Create all necessary DB tables by this command:
 
