@@ -28,3 +28,4 @@ nosetests.xml
 *.mo
 
 vk_relations/settings.json
+config
