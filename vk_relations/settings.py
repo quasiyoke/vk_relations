@@ -1,8 +1,11 @@
 import json
 import logging
+import os
 import sys
 
 logging.basicConfig()
+
+DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class Struct:
@@ -11,7 +14,7 @@ class Struct:
 
 
 try:
-    f = open('settings.json', 'rb')
+    f = open(os.path.join(DIR, 'settings.json'), 'rb')
     settings = json.load(f)
     f.close()
 except (OSError, IOError):
