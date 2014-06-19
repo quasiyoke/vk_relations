@@ -6,7 +6,6 @@ import vk
 
 def init(parent, count):
     now = datetime.datetime.now()
-    persons_counter = 0
     persons_relations_counter = 0
     persons_relation_partners_counter = 0
     retrieved_persons_ids = set()
@@ -44,8 +43,7 @@ def init(parent, count):
         else:
             person = models.Person.create(**person_kwargs)
         retrieved_persons_ids.add(person_data['id'])
-        persons_counter += 1
-    print '%d persons saved' % persons_counter
-    print '%.1f%% of retrieved persons have relations' % (float(persons_relations_counter) / persons_counter * 100)
-    print '%.1f%% of retrieved persons specified relation partner' % (float(persons_relation_partners_counter) / persons_counter * 100)
-    print '%.3f sec/person' % (float((datetime.datetime.now() - now).seconds) / persons_counter)
+    print '%d persons saved' % len(retrieved_persons_ids)
+    print '%.1f%% of retrieved persons have relations' % (float(persons_relations_counter) / len(retrieved_persons_ids) * 100)
+    print '%.1f%% of retrieved persons specified relation partner' % (float(persons_relation_partners_counter) / len(retrieved_persons_ids) * 100)
+    print '%.3f sec/person' % (float((datetime.datetime.now() - now).seconds) / len(retrieved_persons_ids))
