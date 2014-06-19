@@ -63,7 +63,6 @@ setuptools.setup(
         'vk_relations',
     ],
     install_requires=[
-        'MySQLdb',
         'peewee',
         'requests',
         'vk_api',
