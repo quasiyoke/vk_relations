@@ -6,9 +6,6 @@ import peewee
 import settings
 
 
-logging.basicConfig()
-
-
 database = peewee.MySQLDatabase(settings.DB.NAME, user=settings.DB.USER, passwd=settings.DB.PASSWORD)
     
 
@@ -31,7 +28,7 @@ class Person(peewee.Model):
 
     id = peewee.IntegerField(primary_key=True)
     sex = peewee.CharField(choices=SEX_CHOICES)
-    relation = peewee.CharField(choices=RELATION_CHOICES)
+    relation = peewee.CharField(choices=RELATION_CHOICES, default='')
     relation_partner = peewee.ForeignKeyField('self', related_name='relates_with', null=True)
     check_date = peewee.DateTimeField()
 
@@ -41,8 +38,8 @@ class Person(peewee.Model):
 
 class RelationChange(peewee.Model):
     person = peewee.ForeignKeyField(Person, related_name='relation_changes')
-    relation_old = peewee.CharField(choices=RELATION_CHOICES)
-    relation_new = peewee.CharField(choices=RELATION_CHOICES)
+    relation_old = peewee.CharField(choices=RELATION_CHOICES, default='')
+    relation_new = peewee.CharField(choices=RELATION_CHOICES, default='')
     relation_partner_old = peewee.ForeignKeyField(Person, related_name='relation_partners_old', null=True)
     relation_partner_new = peewee.ForeignKeyField(Person, related_name='relation_partners_new', null=True)
     check_date_old = peewee.DateTimeField()
