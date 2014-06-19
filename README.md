@@ -1,6 +1,6 @@
-# VK relations
+# VK Relations
 
-VK relations is Python app to monitor people's relations at Vkontakte social network. It uses MySQL to store data.
+VK Relations is Python app to monitor people's relations at Vkontakte social network. It uses MySQL to store data.
 
 ## Installation
 1. Install MySQL locally.
@@ -10,10 +10,10 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
         mysql> CREATE DATABASE vk_relations_db;
         mysql> GRANT ALL ON vk_relations_db.* TO vk_relations_user@localhost;
 3. Install [MySQLdb package.][1]
-4. Install VK relations package in a development mode at your home directory:
+4. Install VK Relations package in a development mode at your home directory:
 
         $ pip install -e git+git://github.com/quasiyoke/vk_relations.git#egg=vk_relations
-5. Configure VK relations using file ```~/src/vk-relations/vk_relations/settings.json```. Example of settings.json file:
+5. Configure VK Relations using file ```~/src/vk-relations/vk_relations/settings.json```. Example of settings.json file:
 
 		{
 			"DB": {
@@ -31,7 +31,7 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
         $ setup.py create_tables
 
 ## DB Initialization
-To monitor how people break and create new relations, we should save info about some group of people locally. VK relations allows you to load set of some person's friends for this. You may specify desirable size of the group. If the man hasn't enough friends, friends of his friends will be loaded recursively.
+To monitor how people break and create new relations, we should save info about some group of people locally. VK Relations allows you to load set of some person's friends for this. You may specify desirable size of the group. If the man hasn't enough friends, friends of his friends will be loaded recursively.
 
 To initialize DB with 9000 friends of user with ID = 1:
 
