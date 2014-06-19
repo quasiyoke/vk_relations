@@ -26,6 +26,28 @@ class create_tables(setuptools.Command):
         models.create_tables()
 
 
+class drop_tables(setuptools.Command):
+    description = 'drop all created DB tables'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from vk_relations import models
+        answer = raw_input('Are you sure you want to clear all VK Relations data? (y/n): ')
+        if 'y' == answer:
+            models.drop_tables()
+        elif 'n' == answer:
+            quit()
+        else:
+            sys.exit()
+
+
 class init(setuptools.Command):
     description = 'initialize DB with first persons'
 
@@ -69,6 +91,7 @@ setuptools.setup(
     ],
     cmdclass={
         'create_tables': create_tables,
+        'drop_tables': drop_tables,
         'init': init,
     }
 )

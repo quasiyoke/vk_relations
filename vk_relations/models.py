@@ -56,6 +56,15 @@ def create_tables():
     try:
         Person.create_table()
         RelationChange.create_table()
-    except (peewee.DatabaseError, peewee.OperationalError):
-        logging.getLogger(__name__).critical('Can\'t connect to database.')
+    except (peewee.DatabaseError, peewee.OperationalError), e:
+        logging.getLogger(__name__).critical(e)
+        sys.exit()
+
+
+def drop_tables():
+    try:
+        RelationChange.drop_table()
+        Person.drop_table()
+    except (peewee.DatabaseError, peewee.OperationalError), e:
+        logging.getLogger(__name__).critical(e)
         sys.exit()
