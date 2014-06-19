@@ -13,7 +13,7 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
 4. Install VK relations package in a development mode at your home directory:
 
         $ pip install -e git+git://github.com/quasiyoke/vk_relations.git#egg=vk_relations
-5. Configure VK relations using file ```~/vk_relations/vk_relations/settings.json```. Example of settings.json file:
+5. Configure VK relations using file ```~/src/vk-relations/vk_relations/settings.json```. Example of settings.json file:
 
 		{
 			"DB": {
