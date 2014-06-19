@@ -19,7 +19,7 @@ VK relations is Python app to monitor people's relations at Vkontakte social net
 			"DB": {
 				"NAME": "vk_relations_db",
 				"USER": "vk_relations_user",
-				"PASSWORD": "topsecret"
+				"PASSWORD": "topsecret_mysql_password"
 			},
 			"VK": {
 				"LOGIN": "user@mail.com",
