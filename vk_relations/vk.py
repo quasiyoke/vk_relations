@@ -72,14 +72,10 @@ def prepare_field(d, key, choices):
     try:
         value = d[key]
     except KeyError:
-        pass
+        value = ''
     else:
-        try:
-            value = choices[value]
-        except KeyError:
-            del d[key]
-        else:
-            d[key] = value
+        value = choices.get(value, '')
+    d[key] = value
 
 
 def prepare_person(person):
