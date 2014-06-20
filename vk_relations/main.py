@@ -4,6 +4,7 @@ import models
 import vk
 
 
+@models.database.commit_on_success
 def init(parent, count):
     now = datetime.datetime.now()
     persons_relations_counter = 0
