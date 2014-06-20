@@ -65,9 +65,6 @@ def check():
         exit();
 
     for i in range(0, len(before)):
-
-        after_partner_id  = 0;
-        after_relation    = "";
         before_partner_id = before[i].relation_partner and before[i].relation_partner.id
 
         after_partner_id  = after[i]['relation_partner']
