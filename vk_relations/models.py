@@ -1,9 +1,11 @@
+import datetime
 import logging
 import sys
 
 import peewee
 
 import settings
+import vk
 
 
 database = peewee.MySQLDatabase(settings.DB.NAME, user=settings.DB.USER, passwd=settings.DB.PASSWORD)
@@ -39,6 +41,20 @@ class Person(peewee.Model):
 
     class Meta:
         database = database
+
+    @staticmethod
+    def ensure(id):
+        '''
+        If there's no user with such ID in DB, creates it.
+        '''
+        try:
+            Person.select().where(Person.id == id)[0]
+        except IndexError:
+            person_kwargs = vk.get_persons_by_ids([id]).next()
+            person_kwargs['check_date'] = datetime.datetime.now()
+            if person_kwargs['relation_partner']:
+                Person.ensure(person_kwargs['relation_partner'])
+            Person.create(**person_kwargs)
         
 
 class RelationChange(peewee.Model):

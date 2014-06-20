@@ -10,14 +10,8 @@ def init(parent, count):
     persons_relations_counter = 0
     persons_relation_partners_counter = 0
     retrieved_persons_ids = set()
-    for person_data in vk.get_persons(parent, count):
-        person_kwargs = {
-            'id': person_data['id'],
-            'check_date': now,
-            'relation': person_data['relation'],
-            'relation_partner': person_data['relation_partner'],
-            'sex': person_data['sex'],
-        }
+    for person_kwargs in vk.get_persons(parent, count):
+        person_kwargs['check_date'] = now
         if person_kwargs['relation'] and 'single' != person_kwargs['relation']:
             persons_relations_counter += 1
             if person_kwargs['relation_partner']:
@@ -39,12 +33,13 @@ def init(parent, count):
             person.save()
         else:
             person = models.Person.create(**person_kwargs)
-        retrieved_persons_ids.add(person_data['id'])
+        retrieved_persons_ids.add(person_kwargs['id'])
     print '%d persons saved' % len(retrieved_persons_ids)
     print '%.1f%% of retrieved persons have relations' % (float(persons_relations_counter) / len(retrieved_persons_ids) * 100)
     print '%.1f%% of retrieved persons specified relation partner' % (float(persons_relation_partners_counter) / len(retrieved_persons_ids) * 100)
     print '%.3f sec/person' % (float((datetime.datetime.now() - now).seconds) / len(retrieved_persons_ids))
 
+@models.database.commit_on_success
 def check():
     # load persons from database
     # for each person load new data by id
@@ -73,6 +68,8 @@ def check():
 
         if before[i].id == after[i]['id']:
             if (before[i].relation != after_relation) or (before_partner_id != after_partner_id):
+                if after_partner_id:
+                    models.Person.ensure(after_partner_id)
                 models.RelationChange.create(
                 	person = after[i]['id'],
                 	relation_old = before[i].relation,
@@ -88,8 +85,8 @@ def check():
                 print "partner_id from: %r" % before_partner_id
                 print "partner_id to: %r" % after_partner_id
 
-                before[i].relation         = after_relation;
-                before[i].relation_partner = after_partner_id;
+                before[i].relation         = after_relation
+                before[i].relation_partner = after_partner_id
     
         before[i].check_date = now;
         before[i].save();
