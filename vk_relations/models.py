@@ -27,7 +27,7 @@ class Person(peewee.Model):
     )
 
     id = peewee.IntegerField(primary_key=True)
-    sex = peewee.CharField(choices=SEX_CHOICES)
+    sex = peewee.CharField(choices=SEX_CHOICES, default='')
     relation = peewee.CharField(choices=RELATION_CHOICES, default='')
     relation_partner = peewee.ForeignKeyField('self', related_name='relates_with', null=True)
     check_date = peewee.DateTimeField()

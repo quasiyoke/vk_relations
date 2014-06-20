@@ -12,9 +12,12 @@ def init(parent, count):
     for person_data in vk.get_persons(parent, count):
         person_kwargs = {
             'id': person_data['id'],
-            'sex': person_data['sex'],
             'check_date': now,
         }
+        try:
+            person_kwargs['sex'] = person_data['sex']
+        except KeyError:
+            pass
         try:
             person_kwargs['relation'] = person_data['relation']
             persons_relations_counter += 1
@@ -27,7 +30,6 @@ def init(parent, count):
             if person_kwargs['relation_partner'] not in retrieved_persons_ids:
                 models.Person.create(
                     id=person_kwargs['relation_partner'],
-                    sex='male',
                     check_date=now,
                 )
                 retrieved_persons_ids.add(person_kwargs['relation_partner'])
