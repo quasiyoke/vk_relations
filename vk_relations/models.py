@@ -7,6 +7,11 @@ import settings
 
 
 database = peewee.MySQLDatabase(settings.DB.NAME, user=settings.DB.USER, passwd=settings.DB.PASSWORD)
+try:
+    database.connect()
+except peewee.DatabaseError, e:
+    logging.getLogger(__name__).critical('Can\'t connect to DB: %s' % e)
+    sys.exit()
     
 
 RELATION_CHOICES = (
