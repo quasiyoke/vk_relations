@@ -19,23 +19,16 @@ RELATION_CHOICES = {
     7: 'in_love',
 }
 
-def process_persons_glob(persons):
-    for person in persons:
-        try:
-            partner_id = str(person['relation_partner']['id'])
-        except KeyError:
-            pass
-        yield prepare_person(person)
 
-
-def get_persons_relations(ids):
+def get_persons_by_ids(ids):
     api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD);
+    ids = map(str, ids)
     persons = api.method('users.get', {
         'user_ids': ','.join(ids),
         'fields': 'sex,relation',
     })
-    for person in process_persons_glob(persons):
-        yield person
+    for person in persons:
+        yield prepare_person(person)
 
 
 

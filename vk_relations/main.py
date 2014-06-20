@@ -52,10 +52,10 @@ def check():
     before = [];
     after  = [];
     for person in models.Person.select():
-        before += [person];
-        ids += [str(person.id)];
-    for person in vk.get_persons_relations(ids):
-        after  += [person];
+        before.append(person)
+        ids.append(person.id)
+    for person in vk.get_persons_by_ids(ids):
+        after.append(person)
     
     # List order is implied
     if( len(before) != len(after)):
@@ -64,13 +64,10 @@ def check():
         exit();
 
     for i in range(0, len(before)-1):
-
-        after_partner_id  = 0;
-        after_relation    = "";
         before_partner_id = before[i].relation_partner
 
-        after_partner_id  = after[i].get('relation_partner',{"id":None})['id']
-        after_relation    = after[i].get("relation","")
+        after_partner_id  = after[i]['relation_partner']
+        after_relation    = after[i]['relation']
 
         if before[i].id == after[i]['id']:
             if (before[i].relation != after_relation) or (before_partner_id != after_partner_id):
@@ -79,5 +76,3 @@ def check():
                 print "to: " + repr(str(after_relation));
                 print "partner_id from: " + str(before_partner_id);
                 print "partner_id to: "   + str(after_partner_id);
-
-check();
