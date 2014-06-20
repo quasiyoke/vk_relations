@@ -64,7 +64,15 @@ def create_tables():
 def drop_tables():
     try:
         RelationChange.drop_table()
+    except (peewee.DatabaseError, peewee.OperationalError), e:
+        e = unicode(e)
+        if not e.startswith('(1051'): # Unknown table
+            logging.getLogger(__name__).critical(e)
+            sys.exit()
+    try:
         Person.drop_table()
     except (peewee.DatabaseError, peewee.OperationalError), e:
-        logging.getLogger(__name__).critical(e)
-        sys.exit()
+        e = unicode(e)
+        if not e.startswith('(1051'): # Unknown table
+            logging.getLogger(__name__).critical(e)
+            sys.exit()
