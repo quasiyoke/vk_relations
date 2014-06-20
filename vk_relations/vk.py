@@ -26,6 +26,7 @@ def get_persons(parent, count):
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
     persons_retrieved_ids = set()
+    get_persons.count = count
 
     def process_persons(persons):
         for person in persons:
@@ -38,11 +39,12 @@ def get_persons(parent, count):
             except KeyError:
                 pass
             else:
-                if count > 0 and partner_id not in persons_retrieved_ids:
+                if partner_id not in persons_retrieved_ids:
                     necessary_persons_ids.append(partner_id)
             yield prepare_person(person)
+            get_persons.count -= 1
     
-    while count > 0 and len(persons_with_friends_ids) or len(necessary_persons_ids):
+    while get_persons.count > 0 and len(persons_with_friends_ids) or len(necessary_persons_ids):
         # Fetch necessary persons
         persons_count = min(len(necessary_persons_ids), MAX_PERSONS_ALLOWED)
         if persons_count:
@@ -54,18 +56,16 @@ def get_persons(parent, count):
             })
             for person in process_persons(persons):
                 yield person
-                count -= 1
 
         # Enlarge count of persons using friends
-        while count > 0 and len(persons_with_friends_ids):
+        while get_persons.count > 0 and len(persons_with_friends_ids):
             persons = api.method('friends.get', {
                 'user_id': persons_with_friends_ids.pop(0),
-                'count': count,
+                'count': get_persons.count,
                 'fields': 'sex,relation',
             })['items']
             for person in process_persons(persons):
                 yield person
-                count -= 1
 
 
 def prepare_field(d, key, choices):
