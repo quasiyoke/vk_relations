@@ -13,15 +13,19 @@ logging.basicConfig()
 class create_tables(setuptools.Command):
     description = 'create DB tables'
 
-    user_options = []
+    user_options = [
+        ('reset', 'r', 'reset all data previously'),
+    ]
 
     def initialize_options(self):
-        pass
+        self.reset = False
 
     def finalize_options(self):
         pass
 
     def run(self):
+        if self.reset:
+            self.run_command('drop_tables')
         from vk_relations import models
         models.create_tables()
 
@@ -38,9 +42,9 @@ class drop_tables(setuptools.Command):
         pass
 
     def run(self):
-        from vk_relations import models
         answer = raw_input('Are you sure you want to clear all VK Relations data? (y/n): ')
         if 'y' == answer:
+            from vk_relations import models
             models.drop_tables()
         elif 'n' == answer:
             quit()
