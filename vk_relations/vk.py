@@ -32,23 +32,19 @@ def get_persons(parent, count):
         for person in persons:
             if person['id'] in persons_retrieved_ids:
                 continue
+            prepare_person(person)
             persons_with_friends_ids.append(person['id'])
             persons_retrieved_ids.add(person['id'])
-            try:
-                partner_id = str(person['relation_partner']['id'])
-            except KeyError:
-                pass
-            else:
-                if partner_id not in persons_retrieved_ids:
-                    necessary_persons_ids.append(partner_id)
-            yield prepare_person(person)
+            if person['relation_partner'] and person['relation_partner'] not in persons_retrieved_ids:
+                necessary_persons_ids.append(person['relation_partner'])
+            yield person
             get_persons.count -= 1
     
     while get_persons.count > 0 and len(persons_with_friends_ids) or len(necessary_persons_ids):
         # Fetch necessary persons
         persons_count = min(len(necessary_persons_ids), MAX_PERSONS_ALLOWED)
         if persons_count:
-            persons_ids = necessary_persons_ids[-persons_count:]
+            persons_ids = map(str, necessary_persons_ids[-persons_count:])
             necessary_persons_ids = necessary_persons_ids[:-persons_count]
             persons = api.method('users.get', {
                 'user_ids': ','.join(persons_ids),
@@ -79,6 +75,12 @@ def prepare_field(d, key, choices):
 
 
 def prepare_person(person):
+    person['id'] = int(person['id'])
     prepare_field(person, 'sex', SEX_CHOICES)
     prepare_field(person, 'relation', RELATION_CHOICES)
+    try:
+        relation_partner = person['relation_partner']['id']
+    except KeyError:
+        relation_partner = None
+    person['relation_partner'] = relation_partner
     return person

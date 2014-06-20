@@ -13,31 +13,25 @@ def init(parent, count):
         person_kwargs = {
             'id': person_data['id'],
             'check_date': now,
+            'relation': person_data['relation'],
+            'relation_partner': person_data['relation_partner'],
+            'sex': person_data['sex'],
         }
-        try:
-            person_kwargs['sex'] = person_data['sex']
-        except KeyError:
-            pass
-        try:
-            person_kwargs['relation'] = person_data['relation']
+        if person_kwargs['relation'] and 'single' != person_kwargs['relation']:
             persons_relations_counter += 1
-            person_kwargs['relation_partner'] = person_data['relation_partner']['id']
-            persons_relation_partners_counter += 1
-        except KeyError:
-            pass
-        else:
-            # If we have no relation partner in DB, we should create stub of him to prevent constraint-related problems.
-            if person_kwargs['relation_partner'] not in retrieved_persons_ids:
-                models.Person.create(
-                    id=person_kwargs['relation_partner'],
-                    check_date=now,
-                )
-                retrieved_persons_ids.add(person_kwargs['relation_partner'])
+            if person_kwargs['relation_partner']:
+                persons_relation_partners_counter += 1
+                # If we have no relation partner in DB, we should create stub of him to prevent constraint-related problems.
+                if person_kwargs['relation_partner'] not in retrieved_persons_ids:
+                    models.Person.create(
+                        id=person_kwargs['relation_partner'],
+                        check_date=now,
+                    )
+                    retrieved_persons_ids.add(person_kwargs['relation_partner'])
 
         # Person creation.
-        
-        # If we already created this person as someone's relation partner, just update his stub with actual data.
         if person_kwargs['id'] in retrieved_persons_ids:
+            # If we already created this person as someone's relation partner, just update his stub with actual data.
             person = models.Person.select().where(models.Person.id == person_kwargs['id'])[0]
             for key, value in person_kwargs.items():
                 setattr(person, key, value)
