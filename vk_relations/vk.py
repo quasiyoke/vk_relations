@@ -23,40 +23,49 @@ RELATION_CHOICES = {
 def get_persons(parent, count):
     MAX_PERSONS_ALLOWED = 1000
     api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD)
-    deck = [parent]
-    persons_retrieved = set()
-    while len(deck):
-        request_users_count = min(len(deck), MAX_PERSONS_ALLOWED)
-        request_users_ids = deck[-request_users_count:]
-        deck = deck[:-request_users_count]
-        persons_retrieved.update(request_users_ids)
-        persons = api.method('users.get', {
-            'user_ids': ','.join(request_users_ids),
-            'fields': 'sex,relation',
-        })
+    necessary_persons_ids = [parent]
+    persons_with_friends_ids = []
+    persons_retrieved_ids = set()
 
-        # Enlarge count of persons using friends.
-        i = 0
-        count -= request_users_count
-        while count > 0 and i < len(request_users_ids):
-            response = api.method('friends.get', {
-                'user_id': request_users_ids[i],
+    def process_persons(persons):
+        for person in persons:
+            if person['id'] in persons_retrieved_ids:
+                continue
+            persons_with_friends_ids.append(person['id'])
+            persons_retrieved_ids.add(person['id'])
+            try:
+                partner_id = str(person['relation_partner']['id'])
+            except KeyError:
+                pass
+            else:
+                if count > 0 and partner_id not in persons_retrieved_ids:
+                    necessary_persons_ids.append(partner_id)
+            yield prepare_person(person)
+    
+    while count > 0 and len(persons_with_friends_ids) or len(necessary_persons_ids):
+        # Fetch necessary persons
+        persons_count = min(len(necessary_persons_ids), MAX_PERSONS_ALLOWED)
+        if persons_count:
+            persons_ids = necessary_persons_ids[-persons_count:]
+            necessary_persons_ids = necessary_persons_ids[:-persons_count]
+            persons = api.method('users.get', {
+                'user_ids': ','.join(persons_ids),
+                'fields': 'sex,relation',
+            })
+            for person in process_persons(persons):
+                yield person
+                count -= 1
+
+        # Enlarge count of persons using friends
+        while count > 0 and len(persons_with_friends_ids):
+            persons = api.method('friends.get', {
+                'user_id': persons_with_friends_ids.pop(0),
                 'count': count,
                 'fields': 'sex,relation',
             })['items']
-            i += 1
-            count -= len(response)
-            persons_retrieved.update([int(person['id']) for person in response])
-            persons.extend(response)
-
-        for person in persons:
-            if 'relation_partner' in person:
-                # Always check out relation.
-                id = str(person['relation_partner']['id'])
-                if id not in persons_retrieved:
-                    deck.append(id)
-            count -= 1
-            yield prepare_person(person)
+            for person in process_persons(persons):
+                yield person
+                count -= 1
 
 
 def prepare_field(d, key, choices):
