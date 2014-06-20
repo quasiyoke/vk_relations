@@ -64,15 +64,15 @@ def check():
         exit();
 
     for i in range(0, len(before)-1):
-        before_partner_id = before[i].relation_partner
+        before_partner_id = before[i].relation_partner and before[i].relation_partner.id
 
         after_partner_id  = after[i]['relation_partner']
         after_relation    = after[i]['relation']
 
         if before[i].id == after[i]['id']:
             if (before[i].relation != after_relation) or (before_partner_id != after_partner_id):
-                print "change for: " + str(before[i].id);
-                print "from: " + repr(str(before[i].relation));
-                print "to: " + repr(str(after_relation));
-                print "partner_id from: " + str(before_partner_id);
-                print "partner_id to: "   + str(after_partner_id);
+                print "change for: %d" % before[i].id
+                print "from: %r" % before[i].relation
+                print "to: %r" % after_relation
+                print "partner_id from: %d" % before_partner_id
+                print "partner_id to: %d" % after_partner_id
