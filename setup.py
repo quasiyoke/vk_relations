@@ -10,6 +10,22 @@ import sys
 logging.basicConfig()
 
 
+class check(setuptools.Command):
+    description = 'check persons\' relations for changes'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from vk_relations import main
+        main.check()
+
+
 class create_tables(setuptools.Command):
     description = 'create DB tables'
 
@@ -96,6 +112,7 @@ setuptools.setup(
         'vk_api',
     ],
     cmdclass={
+        'check': check,
         'create_tables': create_tables,
         'drop_tables': drop_tables,
         'init': init,
