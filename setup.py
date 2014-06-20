@@ -28,6 +28,7 @@ class create_tables(setuptools.Command):
             self.run_command('drop_tables')
         from vk_relations import models
         models.create_tables()
+        print 'Tables were created successfully'
 
 
 class drop_tables(setuptools.Command):
@@ -46,6 +47,7 @@ class drop_tables(setuptools.Command):
         if 'y' == answer:
             from vk_relations import models
             models.drop_tables()
+            print 'Tables were dropped successfully'
         elif 'n' == answer:
             quit()
         else:
