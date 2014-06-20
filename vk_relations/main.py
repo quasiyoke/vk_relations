@@ -48,6 +48,7 @@ def check():
     # load persons from database
     # for each person load new data by id
     print "Start:"
+    now = datetime.datetime.now()
     ids = [];
     before = [];
     after  = [];
@@ -63,7 +64,10 @@ def check():
         print str(len(before)) + " & " + str(len(after));
         exit();
 
-    for i in range(0, len(before)-1):
+    for i in range(0, len(before)):
+
+        after_partner_id  = 0;
+        after_relation    = "";
         before_partner_id = before[i].relation_partner and before[i].relation_partner.id
 
         after_partner_id  = after[i]['relation_partner']
@@ -71,8 +75,23 @@ def check():
 
         if before[i].id == after[i]['id']:
             if (before[i].relation != after_relation) or (before_partner_id != after_partner_id):
+                models.RelationChange.create(
+                	person = after[i]['id'],
+                	relation_old = before[i].relation,
+                	relation_new = after_relation,
+                	relation_partner_old = before_partner_id,
+                	relation_partner_new = after_partner_id,
+                	check_date_old = before[i].check_date,
+                	check_date_new = now
+                )
                 print "change for: %d" % before[i].id
                 print "from: %r" % before[i].relation
                 print "to: %r" % after_relation
-                print "partner_id from: %d" % before_partner_id
-                print "partner_id to: %d" % after_partner_id
+                print "partner_id from: %r" % before_partner_id
+                print "partner_id to: %r" % after_partner_id
+
+                before[i].relation         = after_relation;
+                before[i].relation_partner = after_partner_id;
+    
+        before[i].check_date = now;
+        before[i].save();
