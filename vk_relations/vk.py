@@ -19,6 +19,25 @@ RELATION_CHOICES = {
     7: 'in_love',
 }
 
+def process_persons_glob(persons):
+    for person in persons:
+        try:
+            partner_id = str(person['relation_partner']['id'])
+        except KeyError:
+            pass
+        yield prepare_person(person)
+
+
+def get_persons_relations(ids):
+    api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD);
+    persons = api.method('users.get', {
+        'user_ids': ','.join(ids),
+        'fields': 'sex,relation',
+    })
+    for person in process_persons_glob(persons):
+        yield person
+
+
 
 def get_persons(parent, count):
     MAX_PERSONS_ALLOWED = 1000
@@ -26,8 +45,8 @@ def get_persons(parent, count):
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
     persons_retrieved_ids = set()
-    get_persons.count = count
-
+    get_persons.count = count    
+    
     def process_persons(persons):
         for person in persons:
             if person['id'] in persons_retrieved_ids:
@@ -39,7 +58,7 @@ def get_persons(parent, count):
                 necessary_persons_ids.append(person['relation_partner'])
             yield person
             get_persons.count -= 1
-    
+
     while get_persons.count > 0 and len(persons_with_friends_ids) or len(necessary_persons_ids):
         # Fetch necessary persons
         persons_count = min(len(necessary_persons_ids), MAX_PERSONS_ALLOWED)

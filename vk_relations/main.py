@@ -43,3 +43,41 @@ def init(parent, count):
     print '%.1f%% of retrieved persons have relations' % (float(persons_relations_counter) / len(retrieved_persons_ids) * 100)
     print '%.1f%% of retrieved persons specified relation partner' % (float(persons_relation_partners_counter) / len(retrieved_persons_ids) * 100)
     print '%.3f sec/person' % (float((datetime.datetime.now() - now).seconds) / len(retrieved_persons_ids))
+
+def check():
+    # load persons from database
+    # for each person load new data by id
+    print "Start:"
+    ids = [];
+    before = [];
+    after  = [];
+    for person in models.Person.select():
+        before += [person];
+        ids += [str(person.id)];
+    for person in vk.get_persons_relations(ids):
+        after  += [person];
+    
+    # List order is implied
+    if( len(before) != len(after)):
+        print "List size missmatch!";
+        print str(len(before)) + " & " + str(len(after));
+        exit();
+
+    for i in range(0, len(before)-1):
+
+        after_partner_id  = 0;
+        after_relation    = "";
+        before_partner_id = before[i].relation_partner
+
+        after_partner_id  = after[i].get('relation_partner',{"id":None})['id']
+        after_relation    = after[i].get("relation","")
+
+        if before[i].id == after[i]['id']:
+            if (before[i].relation != after_relation) or (before_partner_id != after_partner_id):
+                print "change for: " + str(before[i].id);
+                print "from: " + repr(str(before[i].relation));
+                print "to: " + repr(str(after_relation));
+                print "partner_id from: " + str(before_partner_id);
+                print "partner_id to: "   + str(after_partner_id);
+
+check();
