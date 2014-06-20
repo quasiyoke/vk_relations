@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 
-logging.basicConfig()
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -15,8 +14,13 @@ class Struct:
 
 try:
     f = open(os.path.join(DIR, 'settings.json'), 'rb')
-    settings = json.load(f)
-    f.close()
+    try:
+        settings = json.load(f)
+    except ValueError, e:
+        logging.getLogger(__name__).critical('"settings.json" file format error: ' + unicode(e))
+        sys.exit()
+    finally:
+        f.close()
 except (OSError, IOError):
     logging.getLogger(__name__).critical('"settings.json" file reading troubles')
     sys.exit()
