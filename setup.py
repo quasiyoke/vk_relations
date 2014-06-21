@@ -100,8 +100,8 @@ setuptools.setup(
     name='vk_relations',
     version='0.0.1',
     description='Tool for VK relations exploration.',
-    author='Pyotr Ermishkin',
-    author_email='quasiyoke@gmail.com',
+    author='Pyotr Ermishkin, Andrey Vasnetsov',
+    author_email='quasiyoke@gmail.com, vasnetsov93@gmail.com',
     url='https://github.com/quasiyoke/vk_relations',
     packages=[
         'vk_relations',
