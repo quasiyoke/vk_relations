@@ -43,7 +43,6 @@ def init(parent, count):
 def check():
     # load persons from database
     # for each person load new data by id
-    print "Start:"
     now = datetime.datetime.utcnow()
     for before, after in vk.get_changed_persons(models.Person.select().iterator()):
         before_partner_id = before.relation_partner and before.relation_partner.id
@@ -62,11 +61,11 @@ def check():
                 check_date_old = before.check_date,
                 check_date_new = now,
         )
-        print "change for: %d" % before.id
-        print "from: %r" % before.relation
-        print "to: %r" % after_relation
-        print "partner_id from: %r" % before_partner_id
-        print "partner_id to: %r" % after_partner_id
+        print "\nchange for: %d" % before.id
+        print "from: %s" % (before.relation or 'None')
+        print "to:   %s" % (after_relation or 'None')
+        print "partner_id from: %s" % (before_partner_id or 'None')
+        print "partner_id to:   %s" % (after_partner_id or 'None')
 
         before.relation         = after_relation
         before.relation_partner = after_partner_id
