@@ -73,13 +73,12 @@ def get_persons(parent, count):
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
     persons_retrieved_ids = set()
-    get_persons.count = count    
+    get_persons.count = count
     
     def process_persons(persons):
         for person in persons:
             if person['id'] in persons_retrieved_ids:
                 continue
-            prepare_person(person)
             persons_with_friends_ids.append(person['id'])
             persons_retrieved_ids.add(person['id'])
             if person['relation_partner'] and person['relation_partner'] not in persons_retrieved_ids:
@@ -91,23 +90,27 @@ def get_persons(parent, count):
         # Fetch necessary persons
         persons_count = min(len(necessary_persons_ids), MAX_PERSONS_ALLOWED)
         if persons_count:
-            persons_ids = map(str, necessary_persons_ids[-persons_count:])
+            persons_ids = necessary_persons_ids[-persons_count:]
             necessary_persons_ids = necessary_persons_ids[:-persons_count]
-            persons = api.method('users.get', {
-                'user_ids': ','.join(persons_ids),
-                'fields': 'sex,relation',
-            })
-            for person in process_persons(persons):
+            for person in process_persons(get_persons_by_ids(persons_ids)):
                 yield person
 
         # Enlarge count of persons using friends
         while get_persons.count > 0 and len(persons_with_friends_ids):
-            persons = api.method('friends.get', {
-                'user_id': persons_with_friends_ids.pop(0),
-                'count': get_persons.count,
-                'fields': 'sex,relation',
-            })['items']
-            for person in process_persons(persons):
+            try:
+                persons = api.method('friends.get', {
+                    'user_id': persons_with_friends_ids.pop(0),
+                    'count': get_persons.count,
+                    'fields': 'sex,relation',
+                })['items']
+            except vk_api.vk_api.ApiError, e:
+                if 15 == e.code:
+                    # User was deactivated, so he has no friends.
+                    continue
+                else:
+                    logging.getLogger(__name__).critical(e)
+                    sys.exit()
+            for person in process_persons(itertools.imap(prepare_person, persons)):
                 yield person
 
 
