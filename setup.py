@@ -49,6 +49,8 @@ class create_tables(command):
 
     def run(self):
         if self.reset:
+            cmd_obj = self.distribution.get_command_obj('drop_tables')
+            cmd_obj.database = self.database
             self.run_command('drop_tables')
         else:
             command.run(self)
