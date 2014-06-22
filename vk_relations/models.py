@@ -1,14 +1,12 @@
 import datetime
 import logging
-import sys
-
 import peewee
-
 import settings
+import sys
 import vk
 
 
-database = peewee.MySQLDatabase(settings.DB.NAME, user=settings.DB.USER, passwd=settings.DB.PASSWORD)
+database = peewee.MySQLDatabase(settings.DB_NAME, user=settings.DB_USER, passwd=settings.DB_PASSWORD)
 try:
     database.connect()
 except peewee.DatabaseError, e:

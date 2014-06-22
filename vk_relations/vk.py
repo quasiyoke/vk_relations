@@ -58,7 +58,7 @@ def get_changed_persons(persons):
     
 
 def get_persons_by_ids(ids):
-    api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD);
+    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD);
     ids = map(str, ids)
     persons = api.method('users.get', {
         'user_ids': ','.join(ids),
@@ -69,7 +69,7 @@ def get_persons_by_ids(ids):
 
 
 def get_persons(parent, count):
-    api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD)
+    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
     persons_retrieved_ids = set()

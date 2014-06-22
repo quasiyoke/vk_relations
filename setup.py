@@ -10,55 +10,62 @@ import sys
 logging.basicConfig()
 
 
-class check(setuptools.Command):
-    description = 'check persons\' relations for changes'
-
-    user_options = []
-
+class command(setuptools.Command):
     def initialize_options(self):
-        pass
+        self.database = 'PRIMARY'
 
     def finalize_options(self):
         pass
+    
+    def run(self):
+        from vk_relations import settings
+        settings.set_db_configuration(self.database)
+
+
+class check(command):
+    description = 'check persons\' relations for changes'
+
+    user_options = [
+        ('database=', 'd', 'which database configuration use'),
+    ]
 
     def run(self):
+        command.run(self)
         from vk_relations import main
         main.check()
 
 
-class create_tables(setuptools.Command):
+class create_tables(command):
     description = 'create DB tables'
 
     user_options = [
+        ('database=', 'd', 'which database configuration use'),
         ('reset', 'r', 'reset all data previously'),
     ]
 
     def initialize_options(self):
+        command.initialize_options(self)
         self.reset = False
-
-    def finalize_options(self):
-        pass
 
     def run(self):
         if self.reset:
             self.run_command('drop_tables')
+        else:
+            command.run(self)
         from vk_relations import models
         models.create_tables()
         print 'Tables were created successfully'
 
 
-class drop_tables(setuptools.Command):
+class drop_tables(command):
     description = 'drop all created DB tables'
 
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
+    user_options = [
+        ('database=', 'd', 'which database configuration use'),
+    ]
 
     def run(self):
+        command.run(self)
         answer = raw_input('Are you sure you want to clear all VK Relations data? (y/n): ')
         if 'y' == answer:
             from vk_relations import models
@@ -70,19 +77,22 @@ class drop_tables(setuptools.Command):
             sys.exit()
 
 
-class init(setuptools.Command):
+class init(command):
     description = 'initialize DB with first persons'
 
     user_options = [
+        ('database=', 'd', 'which database configuration use'),
         ('user-id=', 'u', 'first person which friends will be used for initialization'),
         ('count=', 'c', 'how much users should we retrieve'),
     ]
 
     def initialize_options(self):
+        command.initialize_options(self)
         self.user_id = None
         self.count = None
 
     def finalize_options(self):
+        command.finalize_options(self)
         if self.user_id is None:
             logging.getLogger(__name__).critical('"user-id" parameter wasn\'t specified.')
             sys.exit()
@@ -92,6 +102,7 @@ class init(setuptools.Command):
         self.count = int(self.count)
 
     def run(self):
+        command.run(self)
         from vk_relations import main
         main.init(self.user_id, self.count)
         
