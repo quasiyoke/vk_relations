@@ -5,7 +5,7 @@ import vk
 
 @models.database.commit_on_success
 def init(parent, count):
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     persons_relations_counter = 0
     persons_relation_partners_counter = 0
     retrieved_persons_ids = set()
@@ -36,7 +36,7 @@ def init(parent, count):
     print '%d persons saved' % len(retrieved_persons_ids)
     print '%.1f%% of retrieved persons have relations' % (float(persons_relations_counter) / len(retrieved_persons_ids) * 100)
     print '%.1f%% of retrieved persons specified relation partner' % (float(persons_relation_partners_counter) / len(retrieved_persons_ids) * 100)
-    print '%.3f sec/person' % (float((datetime.datetime.now() - now).seconds) / len(retrieved_persons_ids))
+    print '%.3f sec/person' % (float((datetime.datetime.utcnow() - now).seconds) / len(retrieved_persons_ids))
 
 
 @models.database.commit_on_success
@@ -44,7 +44,7 @@ def check():
     # load persons from database
     # for each person load new data by id
     print "Start:"
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     for before, after in vk.get_changed_persons(models.Person.select().iterator()):
         before_partner_id = before.relation_partner and before.relation_partner.id
 

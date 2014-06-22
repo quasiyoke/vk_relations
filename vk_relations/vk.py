@@ -41,7 +41,7 @@ def split(iterator, length):
 
 
 def get_changed_persons(persons):
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     for persons_request in split(persons, MAX_PERSONS_ALLOWED):
         for before, after in itertools.izip_longest(persons_request, get_persons_by_ids([person.id for person in persons_request])):
             if not before or not after or before.id != after['id']:
