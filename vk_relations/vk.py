@@ -1,8 +1,13 @@
+import datetime
+import itertools
 import logging
 import settings
+import sys
 import vk_api
 
-logging.basicConfig()
+
+# Max size of `user_ids` field is 9000 now. Maximal length of ID is 9, plus delimiter.
+MAX_PERSONS_ALLOWED = 9000 / 10
 
 SEX_CHOICES = {
     1: 'female',
@@ -20,6 +25,43 @@ RELATION_CHOICES = {
 }
 
 
+def split(iterator, length):
+    a = None
+    try:
+        while True:
+            a = []
+            for i in xrange(length):
+                a.append(iterator.next())
+            yield a
+    except StopIteration:
+        if len(a):
+            yield a
+
+
+def get_changed_persons(persons):
+    now = datetime.datetime.now()
+    for persons_request in split(persons, MAX_PERSONS_ALLOWED):
+        for before, after in itertools.izip_longest(persons_request, get_persons_by_ids([person.id for person in persons_request])):
+            if not before or not after or before.id != after['id']:
+                print before
+                print after
+                try:
+                    print before.id
+                    print after['id']
+                except:
+                    pass
+                logging.getLogger(__name__).critical('Response doesn\'t match request.')
+                sys.exit()
+
+            if (before.relation != after['relation']) or \
+               (not before.relation_partner and after['relation_partner']) or \
+               (before.relation_partner and before.relation_partner.id != after['relation_partner']):
+                yield before, after
+            
+            before.check_date = now
+            before.save()
+    
+
 def get_persons_by_ids(ids):
     api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD);
     ids = map(str, ids)
@@ -31,9 +73,7 @@ def get_persons_by_ids(ids):
         yield prepare_person(person)
 
 
-
 def get_persons(parent, count):
-    MAX_PERSONS_ALLOWED = 1000
     api = vk_api.VkApi(settings.VK.LOGIN, settings.VK.PASSWORD)
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
