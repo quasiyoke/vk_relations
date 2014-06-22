@@ -11,7 +11,7 @@ def init(parent, count):
     retrieved_persons_ids = set()
     for person_kwargs in vk.get_persons(parent, count):
         person_kwargs['check_date'] = now
-        if person_kwargs['relation'] and 'single' != person_kwargs['relation']:
+        if person_kwargs['relation'] and person_kwargs['relation'] not in vk.RELATIONS_SINGLE:
             persons_relations_counter += 1
             if person_kwargs['relation_partner']:
                 persons_relation_partners_counter += 1

@@ -24,6 +24,8 @@ RELATION_CHOICES = {
     7: 'in_love',
 }
 
+RELATIONS_SINGLE = set(['single', 'actively_searching'])
+
 
 def split(iterator, length):
     a = None
@@ -43,13 +45,6 @@ def get_changed_persons(persons):
     for persons_request in split(persons, MAX_PERSONS_ALLOWED):
         for before, after in itertools.izip_longest(persons_request, get_persons_by_ids([person.id for person in persons_request])):
             if not before or not after or before.id != after['id']:
-                print before
-                print after
-                try:
-                    print before.id
-                    print after['id']
-                except:
-                    pass
                 logging.getLogger(__name__).critical('Response doesn\'t match request.')
                 sys.exit()
 
