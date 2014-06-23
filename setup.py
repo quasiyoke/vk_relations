@@ -12,14 +12,15 @@ logging.basicConfig()
 
 class command(setuptools.Command):
     def initialize_options(self):
-        self.database = 'PRIMARY'
+        self.database = None
 
     def finalize_options(self):
         pass
     
     def run(self):
-        from vk_relations import settings
-        settings.set_db_configuration(self.database)
+        if self.database:
+            from vk_relations import settings
+            settings.set_db_configuration(self.database)
 
 
 class check(command):
@@ -33,6 +34,19 @@ class check(command):
         command.run(self)
         from vk_relations import main
         main.check()
+
+
+class check_activity(command):
+    description = 'check persons\' activity'
+
+    user_options = [
+        ('database=', 'd', 'which database configuration use'),
+    ]
+
+    def run(self):
+        command.run(self)
+        from vk_relations import main
+        main.check_activity()
 
 
 class create_tables(command):
@@ -126,6 +140,7 @@ setuptools.setup(
     ],
     cmdclass={
         'check': check,
+        'check_activity': check_activity,
         'create_tables': create_tables,
         'drop_tables': drop_tables,
         'init': init,

@@ -25,6 +25,13 @@ RELATION_CHOICES = (
 )
 
 
+class Group(peewee.Model):
+    id = peewee.IntegerField(primary_key=True)
+
+    class Meta:
+        database = database
+
+
 class Person(peewee.Model):
     SEX_CHOICES = (
         ('male', 'Male'),
@@ -36,6 +43,15 @@ class Person(peewee.Model):
     relation = peewee.CharField(choices=RELATION_CHOICES, default='')
     relation_partner = peewee.ForeignKeyField('self', related_name='relates_with', null=True)
     check_date = peewee.DateTimeField()
+
+    # Metrics used to calculate activity
+    birth_date = peewee.DateField(null=True)
+    friends_count = peewee.IntegerField(null=True)
+    groups_count = peewee.IntegerField(null=True)
+    posts_count = peewee.IntegerField(null=True)
+
+    activity = peewee.FloatField(null=True)
+    activity_check_date = peewee.DateTimeField(null=True)
 
     class Meta:
         database = database
@@ -53,7 +69,18 @@ class Person(peewee.Model):
             if person_kwargs['relation_partner']:
                 Person.ensure(person_kwargs['relation_partner'])
             Person.create(**person_kwargs)
-        
+
+
+class PersonGroup(peewee.Model):
+    person = peewee.ForeignKeyField(Person)
+    group = peewee.ForeignKeyField(Group)
+
+    class Meta:
+        database = database
+        indexes = (
+            (('person', 'group'), False),
+        )
+
 
 class RelationChange(peewee.Model):
     person = peewee.ForeignKeyField(Person, related_name='relation_changes')
@@ -75,23 +102,19 @@ def create_tables():
     try:
         Person.create_table()
         RelationChange.create_table()
+        Group.create_table()
+        PersonGroup.create_table()
     except peewee.DatabaseError, e:
         logging.getLogger(__name__).critical(e)
         sys.exit()
 
 
 def drop_tables():
-    try:
-        RelationChange.drop_table()
-    except peewee.DatabaseError, e:
-        e = unicode(e)
-        if not e.startswith('(1051'): # Unknown table
-            logging.getLogger(__name__).critical(e)
-            sys.exit()
-    try:
-        Person.drop_table()
-    except peewee.DatabaseError, e:
-        e = unicode(e)
-        if not e.startswith('(1051'): # Unknown table
-            logging.getLogger(__name__).critical(e)
-            sys.exit()
+    for model in (RelationChange, Person, PersonGroup, Group):
+        try:
+            model.drop_table()
+        except peewee.DatabaseError, e:
+            e = unicode(e)
+            if not e.startswith('(1051'): # Unknown table
+                logging.getLogger(__name__).critical(e)
+                sys.exit()

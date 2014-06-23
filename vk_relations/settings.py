@@ -43,3 +43,4 @@ try:
 except KeyError, e:
     logging.getLogger(__name__).critical('"settings.json" file doesn\'t contain required field: %s' % e)
     sys.exit()
+set_db_configuration('PRIMARY')

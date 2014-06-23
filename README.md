@@ -35,9 +35,9 @@ VK Relations is a Python app to monitor people's relations at Vkontakte social n
 ## DB Initialization
 To monitor how people break and create new relations, we should save info about some group of people locally. VK Relations allows you to load set of some person's friends for this. You may specify desirable size of the group. If the man hasn't enough friends, friends of his friends will be loaded recursively.
 
-To initialize database with 9000 friends of user with ID = 1:
+To initialize database with 100000 friends of user with ID = 1:
 
-    $ setup.py init -u1 -c9000
+    $ setup.py init -u1 -c100000
 
 ## Persons' relations monitoring
 After a while, you can try to search for people who changed their relations:
@@ -53,7 +53,7 @@ If someone did, you'll be notified about this:
 All changes are stored at ```relationchange``` table and have a UTC timestamp.
 
 ## Alternative DB configurations
-If you need more than one database, you may put several database configurations at ```DB_CONFIGURATIONS``` settings.json section next to the ```PRIMARY``` one.
+If you need more than one database, you may put several database configurations at ```DB_CONFIGURATIONS``` settings.json section next to the ```PRIMARY``` one. ```PRIMARY``` DB configuration is required and default.
 
 To create necessary tables at ```experiment``` configuration, execute this:
 
