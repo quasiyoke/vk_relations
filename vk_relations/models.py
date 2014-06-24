@@ -48,7 +48,7 @@ class Person(peewee.Model):
     birth_date = peewee.DateField(null=True)
     friends_count = peewee.IntegerField(null=True)
     groups_count = peewee.IntegerField(null=True)
-    posts_count = peewee.IntegerField(null=True)
+    posts_count = peewee.FloatField(null=True)
 
     activity = peewee.FloatField(null=True)
     activity_check_date = peewee.DateTimeField(null=True)
@@ -62,13 +62,19 @@ class Person(peewee.Model):
         If there's no user with such ID in DB, creates it.
         '''
         try:
-            Person.select().where(Person.id == id)[0]
-        except IndexError:
+            Person.select().where(Person.id == id).get()
+        except Person.DoesNotExist:
             person_kwargs = vk.get_persons_by_ids([id]).next()
             person_kwargs['check_date'] = datetime.datetime.now()
             if person_kwargs['relation_partner']:
                 Person.ensure(person_kwargs['relation_partner'])
             Person.create(**person_kwargs)
+
+    def set_activity_details(self, activity_details):
+        self.birth_date = activity_details['birth_date']
+        self.friends_count = activity_details['friends_count']
+        self.groups_count = len(activity_details['groups'])
+        self.posts_count = activity_details['posts_count']
 
 
 class PersonGroup(peewee.Model):
@@ -110,7 +116,7 @@ def create_tables():
 
 
 def drop_tables():
-    for model in (RelationChange, Person, PersonGroup, Group):
+    for model in (PersonGroup, Group, RelationChange, Person):
         try:
             model.drop_table()
         except peewee.DatabaseError, e:

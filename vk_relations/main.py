@@ -1,5 +1,6 @@
 import datetime
 import models
+import peewee
 import vk
 
 
@@ -26,7 +27,7 @@ def init(parent, count):
         # Person creation.
         if person_kwargs['id'] in retrieved_persons_ids:
             # If we already created this person as someone's relation partner, just update his stub with actual data.
-            person = models.Person.select().where(models.Person.id == person_kwargs['id'])[0]
+            person = models.Person.select().where(models.Person.id == person_kwargs['id']).get()
             for key, value in person_kwargs.items():
                 setattr(person, key, value)
             person.save()
@@ -70,3 +71,47 @@ def check():
         before.relation         = after_relation
         before.relation_partner = after_partner_id
         before.save()
+
+
+@models.database.commit_on_success
+def check_activity():
+    now = datetime.datetime.utcnow()
+    persons_counter = 0
+    persons_groups_counter = 0
+    
+    persons_without_groups = models.Person.select().where((models.Person.groups_count == 0) | (models.Person.groups_count == None))
+    for person in persons_without_groups:
+        activity_details = vk.get_activity_details(person.id)
+        person.set_activity_details(activity_details)
+        person.activity_check_date = now
+        person.save()
+        persons_counter += 1
+        for group_id in activity_details['groups']:
+            try:
+                models.PersonGroup.create(
+                    person=person,
+                    group=group_id,
+                )
+            except peewee.IntegrityError:
+                models.Group.create(id=group_id)
+                models.PersonGroup.create(
+                    person=person,
+                    group=group_id,
+                )
+            persons_groups_counter += 1
+    
+    persons_and_groups = models.PersonGroup \
+                               .select(models.PersonGroup, models.Person, models.Group) \
+                               .join(models.Group) \
+                               .switch(models.PersonGroup) \
+                               .join(models.Person) \
+                               .where(models.Person.activity_check_date < now)
+    for person_and_group in persons_and_groups:
+        activity_details = vk.get_activity_details(person.id)
+        person.set_activity_details(activity_details)
+        person.activity_check_date = now
+        person.save()
+
+    print '%d persons processed' % persons_counter
+    print '%.1f groups/person' % (float(persons_groups_counter) / persons_counter)
+    print '%.3f sec/person' % (float((datetime.datetime.utcnow() - now).seconds) / persons_counter)

@@ -40,6 +40,76 @@ def split(iterator, length):
             yield a
 
 
+def get_activity_details(id):
+    activity_details = {
+        'birth_date': None,
+        'friends_count': None,
+        'groups': [],
+        'posts_count': None,
+    }
+    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
+
+    # `birth_date`, `friends_count` fetching
+    try:
+        person_data = api.method('users.get', {
+            'user_ids': id,
+            'fields': 'birthdate,counters'
+        })[0]
+    except vk_api.vk_api.ApiError, e:
+        if 15 == e.code:
+            # User was deactivated, so he has no friends, groups and posts.
+            return activity_details
+        else:
+            logging.getLogger(__name__).critical(e)
+            sys.exit()
+    try:
+        activity_details['birth_date'] = datetime.datetime.strptime(person_data['bdate'], '%d.%m.%Y')
+    except (KeyError, ValueError): # Nothing to do if there's no birth_date or only day and month specified.
+        pass
+    try:
+        activity_details['friends_count'] = person_data['counters']['friends']
+    except KeyError:
+        # Another type of deactivated users.
+        return activity_details
+
+    # `groups` fetching
+    try:
+        groups_count = person_data['counters']['groups']
+    except KeyError:
+        groups_count = 0
+    if groups_count:
+        MAX_GROUPS_COUNT = 1000
+        for offset in xrange(0, person_data['counters']['groups'], MAX_GROUPS_COUNT):
+            try:
+                groups = api.method('groups.get', {
+                    'user_id': id,
+                    'offset': offset,
+                })['items']
+            except vk_api.vk_api.ApiError:
+                if 260 == e.code:
+                    # Access to the groups list is denied due to the user's privacy settings.
+                    break
+                else:
+                    logging.getLogger(__name__).critical(e)
+                    sys.exit()
+            activity_details['groups'].extend(groups)
+
+    # `posts_count` fetching
+    MAX_POSTS_COUNT = 100
+    try:
+        posts = api.method('wall.get', {
+            'owner_id': id,
+            'count': MAX_POSTS_COUNT,
+        })['items']
+    except vk_api.vk_api.ApiError:
+        logging.getLogger(__name__).critical(e)
+        sys.exit()
+    else:
+        if len(posts):
+            activity_details['posts_count'] = float(len(posts)) / (datetime.datetime.now() - datetime.datetime.fromtimestamp(posts[-1]['date'])).total_seconds() * 24 * 3600
+    
+    return activity_details
+
 def get_changed_persons(persons):
     now = datetime.datetime.utcnow()
     for persons_request in split(persons, MAX_PERSONS_ALLOWED):
