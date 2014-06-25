@@ -27,6 +27,9 @@ RELATION_CHOICES = {
 RELATIONS_SINGLE = set(['single', 'actively_searching'])
 
 
+api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
+
+
 def split(iterator, length):
     a = None
     try:
@@ -47,7 +50,6 @@ def get_activity_details(id):
         'groups': [],
         'posts_count': None,
     }
-    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
 
     # `birth_date`, `friends_count` fetching
     try:
@@ -128,7 +130,6 @@ def get_changed_persons(persons):
     
 
 def get_persons_by_ids(ids):
-    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD);
     ids = map(str, ids)
     persons = api.method('users.get', {
         'user_ids': ','.join(ids),
@@ -139,7 +140,6 @@ def get_persons_by_ids(ids):
 
 
 def get_persons(parent, count):
-    api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
     necessary_persons_ids = [parent]
     persons_with_friends_ids = []
     persons_retrieved_ids = set()
