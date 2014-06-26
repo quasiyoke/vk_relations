@@ -57,7 +57,7 @@ def get_activity_details(id):
             'user_ids': id,
             'fields': 'birthdate,counters'
         })[0]
-    except vk_api.vk_api.ApiError, e:
+    except vk_api.ApiError, e:
         if 15 == e.code:
             # User was deactivated, so he has no friends, groups and posts.
             return activity_details
@@ -87,7 +87,7 @@ def get_activity_details(id):
                     'user_id': id,
                     'offset': offset,
                 })['items']
-            except vk_api.vk_api.ApiError:
+            except vk_api.ApiError:
                 if 260 == e.code:
                     # Access to the groups list is denied due to the user's privacy settings.
                     break
@@ -103,7 +103,7 @@ def get_activity_details(id):
             'owner_id': id,
             'count': MAX_POSTS_COUNT,
         })['items']
-    except vk_api.vk_api.ApiError:
+    except vk_api.ApiError:
         logging.getLogger(__name__).critical(e)
         sys.exit()
     else:
@@ -173,7 +173,7 @@ def get_persons(parent, count):
                     'count': get_persons.count,
                     'fields': 'sex,relation',
                 })['items']
-            except vk_api.vk_api.ApiError, e:
+            except vk_api.ApiError, e:
                 if 15 == e.code:
                     # User was deactivated, so he has no friends.
                     continue
