@@ -96,6 +96,13 @@ def get_activity_details(id):
                     sys.exit()
             activity_details['groups'].extend(groups)
 
+    # Subscriptions' groups fetching
+    subscriptions = ensure_method('users.getSubscriptions', {
+        'user_id': id,
+    })
+    groups = subscriptions['groups']['items']
+    activity_details['groups'].extend(groups)
+
     # `posts_count` fetching
     MAX_POSTS_COUNT = 100
     try:
