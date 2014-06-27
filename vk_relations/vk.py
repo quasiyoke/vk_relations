@@ -1,8 +1,10 @@
 import datetime
 import itertools
 import logging
+import requests
 import settings
 import sys
+import time
 import vk_api
 
 
@@ -30,17 +32,15 @@ RELATIONS_SINGLE = set(['single', 'actively_searching'])
 api = vk_api.VkApi(settings.VK_LOGIN, settings.VK_PASSWORD)
 
 
-def split(iterator, length):
-    a = None
-    try:
-        while True:
-            a = []
-            for i in xrange(length):
-                a.append(iterator.next())
-            yield a
-    except StopIteration:
-        if len(a):
-            yield a
+def ensure_method(*args, **kwargs):
+    delay = 1
+    while True:
+        try:
+            return api.method(*args, **kwargs)
+        except requests.ConnectionError:
+            logging.getLogger(__name__).warning('Connection error, sleeping for %d sec and retrying.' % delay)
+            time.sleep(delay)
+            delay *= 2
 
 
 def get_activity_details(id):
@@ -53,7 +53,7 @@ def get_activity_details(id):
 
     # `birth_date`, `friends_count` fetching
     try:
-        person_data = api.method('users.get', {
+        person_data = ensure_method('users.get', {
             'user_ids': id,
             'fields': 'birthdate,counters'
         })[0]
@@ -83,7 +83,7 @@ def get_activity_details(id):
         MAX_GROUPS_COUNT = 1000
         for offset in xrange(0, person_data['counters']['groups'], MAX_GROUPS_COUNT):
             try:
-                groups = api.method('groups.get', {
+                groups = ensure_method('groups.get', {
                     'user_id': id,
                     'offset': offset,
                 })['items']
@@ -99,7 +99,7 @@ def get_activity_details(id):
     # `posts_count` fetching
     MAX_POSTS_COUNT = 100
     try:
-        posts = api.method('wall.get', {
+        posts = ensure_method('wall.get', {
             'owner_id': id,
             'count': MAX_POSTS_COUNT,
         })['items']
@@ -131,7 +131,7 @@ def get_changed_persons(persons):
 
 def get_persons_by_ids(ids):
     ids = map(str, ids)
-    persons = api.method('users.get', {
+    persons = ensure_method('users.get', {
         'user_ids': ','.join(ids),
         'fields': 'sex,relation',
     })
@@ -168,7 +168,7 @@ def get_persons(parent, count):
         # Enlarge count of persons using friends
         while get_persons.count > 0 and len(persons_with_friends_ids):
             try:
-                persons = api.method('friends.get', {
+                persons = ensure_method('friends.get', {
                     'user_id': persons_with_friends_ids.pop(0),
                     'count': get_persons.count,
                     'fields': 'sex,relation',
@@ -204,3 +204,16 @@ def prepare_person(person):
         relation_partner = None
     person['relation_partner'] = relation_partner
     return person
+
+
+def split(iterator, length):
+    a = None
+    try:
+        while True:
+            a = []
+            for i in xrange(length):
+                a.append(iterator.next())
+            yield a
+    except StopIteration:
+        if len(a):
+            yield a
