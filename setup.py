@@ -93,6 +93,35 @@ class drop_tables(command):
             sys.exit()
 
 
+class get_age(command):
+    description = 'calculate person\'s age'
+
+    user_options = [
+        ('database=', 'd', 'which database configuration use'),
+        ('user-id=', 'u', 'person whom age you\'re interested in'),
+    ]
+
+    def initialize_options(self):
+        command.initialize_options(self)
+        self.user_id = None
+
+    def finalize_options(self):
+        command.finalize_options(self)
+        if self.user_id is None:
+            logging.getLogger(__name__).critical('"user-id" parameter wasn\'t specified.')
+            sys.exit()
+        try:
+            self.user_id = int(self.user_id)
+        except ValueError:
+            logging.getLogger(__name__).critical('"user-id" parameter should be an integer.')
+            sys.exit()
+
+    def run(self):
+        command.run(self)
+        from vk_relations import main
+        main.get_age(self.user_id)
+
+
 class init(command):
     description = 'initialize DB with first persons'
 
@@ -143,6 +172,7 @@ setuptools.setup(
         'check_activity': check_activity,
         'create_tables': create_tables,
         'drop_tables': drop_tables,
+        'get_age': get_age,
         'init': init,
     }
 )
